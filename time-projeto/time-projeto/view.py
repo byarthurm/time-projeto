@@ -21,15 +21,8 @@ def get_usuarios():
         usuarios=usuarios_list)
 
 
-@app.route('/curso', methods=['GET', 'OPTIONS'])
+@app.route('/cursos', methods=['GET'])
 def get_cursos():
-    if request.method == 'OPTIONS':
-        response = jsonify({'message': 'Preflight request successful'})
-        response.headers.add('Access-Control-Allow-Origin', '*')
-        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-        response.headers.add('Access-Control-Allow-Methods', 'GET')
-        return response
-
     cursos = Cursos.query.all()
     cursos_list = []
     for curso in cursos:
