@@ -1,0 +1,68 @@
+CREATE TABLE Usuarios (
+user_id INT AUTO_INCREMENT PRIMARY KEY,
+nome VARCHAR(100),
+senha VARCHAR(254),
+email VARCHAR(100),
+funcao INT,
+cpf INT,
+img VARCHAR(200)
+);
+
+insert into Usuarios (nome, senha, email, cpf) values('arthur', 'admin', "arthur@aluno.com",
+97643539506);
+
+CREATE TABLE Cursos (
+curso_id INT AUTO_INCREMENT PRIMARY KEY,
+nomeCurso VARCHAR(100),
+descricao VARCHAR(254),
+cargaHoraria INT,
+user_id int,
+FOREIGN KEY(`user_id`) REFERENCES Usuarios(user_id)
+);
+
+insert into Cursos (nomeCurso, descricao, cargaHoraria, user_id) values('Python', 'Um curso
+muito legal', 80 , 1);
+
+CREATE TABLE Salas (
+sala_id INT AUTO_INCREMENT PRIMARY KEY,
+numeroDaSala INT,
+tipo TEXT,
+descricao TEXT
+);
+
+CREATE TABLE Turmas (
+turma_id INT AUTO_INCREMENT PRIMARY KEY,
+nomeDaTurma VARCHAR(100),
+inicioAulas DATE,
+finalAulas DATE,
+diasDaSemana TEXT,
+curso_id int,
+FOREIGN KEY(`curso_id`) REFERENCES Cursos(curso_id),
+user_id int,
+FOREIGN KEY(`user_id`) REFERENCES Usuarios(user_id),
+sala_id int,
+FOREIGN KEY(`sala_id`) REFERENCES Salas(sala_id)
+);
+
+CREATE TABLE Feriados (
+feriado_id INT AUTO_INCREMENT PRIMARY KEY,
+datas DATE,
+nomes TEXT );
+
+CREATE TABLE NLetivos (
+nLetivo_id INT AUTO_INCREMENT PRIMARY KEY,
+datas DATE );
+
+CREATE TABLE PossivelPonte (
+ponte_id INT AUTO_INCREMENT PRIMARY KEY,
+datas DATE );
+
+CREATE TABLE CursoProfessor (
+prof_id INT AUTO_INCREMENT PRIMARY KEY,
+curso_id int,
+FOREIGN KEY(`curso_id`) REFERENCES Cursos(curso_id) );
+CREATE TABLE CursoAluno (
+curso_id int,
+FOREIGN KEY(`curso_id`) REFERENCES Cursos(curso_id),
+user_id int, FOREIGN KEY(`user_id`) REFERENCES Usuarios(user_id),
+prof_id int, FOREIGN KEY(`prof_id`) REFERENCES CursoProfessor(prof_id) );
