@@ -1,6 +1,7 @@
 from flask import jsonify, request, session
 from main import app, db
 from model import Usuarios, Cursos, Salas, Turmas
+from sqlalchemy.orm import join
 
 # -----------------------------------------------------------------------------
 @app.route('/usuarios', methods=['GET'])
@@ -13,7 +14,8 @@ def get_usuarios():
             'nome': usuario.nome,
             'funcao': usuario.funcao,
             'email': usuario.email,
-            'cpf': usuario.cpf
+            'cpf': usuario.cpf,
+            'img': usuario.img
         }
         usuarios_list.append(usuario_dict)
     return jsonify(
@@ -21,8 +23,15 @@ def get_usuarios():
         usuarios=usuarios_list)
 
 
-@app.route('/cursos', methods=['GET'])
+@app.route('/curso', methods=['GET', 'OPTIONS'])
 def get_cursos():
+    if request.method == 'OPTIONS':
+        response = jsonify({'message': 'Preflight request successful'})
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+        response.headers.add('Access-Control-Allow-Methods', 'GET')
+        return response
+
     cursos = Cursos.query.all()
     cursos_list = []
     for curso in cursos:
@@ -46,7 +55,8 @@ def post_usuario():
         senha=data.get('senha'),  # Considerando que agora temos senha
         funcao=data.get('funcao'),
         email=data.get('email'),
-        cpf=data.get('cpf')
+        cpf=data.get('cpf'),
+        img=data.get('img')
     )
     db.session.add(novo_usuario)
     db.session.commit()
@@ -57,7 +67,8 @@ def post_usuario():
             'nome': novo_usuario.nome,
             'funcao': novo_usuario.funcao,
             'email': novo_usuario.email,
-            'cpf': novo_usuario.cpf})
+            'cpf': novo_usuario.cpf,
+            'img': novo_usuario.cpf})
 
 
 @app.route('/cursos', methods=['POST'])
@@ -198,13 +209,25 @@ def edit_sala(sala_id):
 
 @app.route('/turmas', methods=['GET'])
 def get_turmas():
-    turmas = Turmas.query.all()
-    turmas_list = [{'turma_id': turma.turma_id, 'nomeDaTurma': turma.nomeDaTurma,
-                    'inicioAulas': turma.inicioAulas.strftime('%Y-%m-%d'),
-                    'finalAulas': turma.finalAulas.strftime('%Y-%m-%d'), 'diasDaSemana': turma.diasDaSemana,
-                    'curso_id': turma.curso_id, 'user_id': turma.user_id, 'sala_id': turma.sala_id} for turma in turmas]
-    return jsonify({'mensagem': 'Lista de turmas', 'turmas': turmas_list})
+    # Realiza a junção entre as tabelas turmas e usuarios
+    query = db.session.query(Turmas, Usuarios.nome).outerjoin(Usuarios, Usuarios.user_id == Turmas.user_id)
 
+    # Obtém todos os resultados da consulta
+    results = query.all()
+
+    # Lista de dicionários contendo os resultados
+    turmas_list = [{'turma_id': turma[0].turma_id,
+                    'nomeDaTurma': turma[0].nomeDaTurma,
+                    'inicioAulas': turma[0].inicioAulas,
+                    'finalAulas': turma[0].finalAulas,
+                    'diasDaSemana': turma[0].diasDaSemana,
+                    'curso_id': turma[0].curso_id,
+                    'user_id': turma[0].user_id,
+                    'sala_id': turma[0].sala_id,
+                    'nomeUsuario': turma[1]} for turma in results]
+
+    # Retorna os resultados como JSON
+    return jsonify({'mensagem': 'Lista de turmas com nome do usuário', 'turmas': turmas_list})
 
 @app.route('/turmas', methods=['POST'])
 def create_turma():

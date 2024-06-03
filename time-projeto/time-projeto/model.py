@@ -7,6 +7,7 @@ class Usuarios(db.Model):
     funcao = db.Column(db.Integer)
     email = db.Column(db.String(100))
     cpf = db.Column(db.Integer)
+    img = db.Column(db.String(200))
 
 class Cursos(db.Model):
     curso_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
