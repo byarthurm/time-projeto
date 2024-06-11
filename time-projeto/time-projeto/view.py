@@ -233,8 +233,8 @@ def get_turmas():
 def create_turma():
     data = request.json
     nova_turma = Turmas(nomeDaTurma=data['nomeDaTurma'], inicioAulas=data['inicioAulas'], finalAulas=data['finalAulas'],
-                        diasDaSemana=data['diasDaSemana'], curso_id=data['curso_id'], user_id=data['user_id'],
-                        sala_id=data['sala_id'])
+                        diasDaSemana=str(data['diasDaSemana']), curso_id=int(data['curso_id']), user_id=int(data['user_id']),
+                        sala_id=int(data['sala_id']))
     db.session.add(nova_turma)
     db.session.commit()
     return jsonify({'mensagem': 'Turma criada com sucesso'}), 201
