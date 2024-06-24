@@ -1,7 +1,10 @@
-from flask import jsonify, request, session
+from flask import jsonify, request, session, redirect
 from main import app, db
-from model import Usuarios, Cursos, Salas, Turmas
+from requests import request
+from model import Usuarios, Cursos, Salas, Turmas, Feriados
 from sqlalchemy.orm import join
+from datetime import datetime
+
 
 # -----------------------------------------------------------------------------
 @app.route('/usuarios', methods=['GET'])
@@ -99,11 +102,21 @@ def login():
     senha = data.get('senha')
 
     usuario = Usuarios.query.filter_by(email=email).first()
+
     if usuario and usuario.senha == senha:
         session['user_id'] = usuario.user_id
-        return jsonify({'mensagem': 'Login com sucesso'}), 200
+        return jsonify({
+            'mensagem': 'Login com sucesso',
+            'usuario': {
+                'nome': usuario.nome,
+                'email': usuario.email,
+                'img': usuario.img
+            }
+        }), 200
     else:
         return jsonify({'mensagem': 'Email ou senha inválido'}), 401
+
+
 
 # -----------------------------------------------------------------------------
 @app.route('/logout', methods=['POST'])
@@ -229,6 +242,40 @@ def get_turmas():
     # Retorna os resultados como JSON
     return jsonify({'mensagem': 'Lista de turmas com nome do usuário', 'turmas': turmas_list})
 
+@app.route('/turmascalendario', methods=['GET'])
+def get_turmascalendario():
+    query = db.session.query(Turmas)
+    results = query.all()
+    _feriados = Feriados.query.all()
+    feriados = []
+    for fer in _feriados:
+        feriados.append(fer.datas)
+
+    print(_feriados)
+
+    # Formato desejado para a data
+    date_format = "%Y-%m-%d"
+
+    # Criando a lista de turmas com a data formatada
+    turmas_list = []
+    for turma in results:
+        if turma.inicioAulas is not None:
+            print(turma.inicioAulas)
+            print(turma.diasDaSemana)
+            turmas_list.append({
+                'id': turma.turma_id,
+                'title': turma.nomeDaTurma,
+                'rrule': {
+                    'freq':'weekly',
+                    'dtstart': turma.inicioAulas.strftime(date_format),
+                    'until': turma.finalAulas.isoformat(),
+                    'byweekday': eval(turma.diasDaSemana),
+                },
+                'exdate': feriados
+            })
+    print(turmas_list)
+
+    return jsonify({'mensagem': 'Lista de turmas com nome do usuário', 'turmas': turmas_list})
 @app.route('/turmas', methods=['POST'])
 def create_turma():
     data = request.json
@@ -283,3 +330,4 @@ def delete_turma(turma_id):
     db.session.commit()
 
     return jsonify({'mensagem': 'Turma deletada com sucesso'}), 200
+
