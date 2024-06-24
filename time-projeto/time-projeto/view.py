@@ -1,6 +1,5 @@
 from flask import jsonify, request, session, redirect
 from main import app, db
-from requests import request
 from model import Usuarios, Cursos, Salas, Turmas, Feriados
 from sqlalchemy.orm import join
 from datetime import datetime
@@ -198,7 +197,7 @@ def get_salas():
 @app.route('/salas', methods=['POST'])
 def create_sala():
     data = request.json
-    nova_sala = Salas(numeroDaSala=data['numeroDaSala'], tipo=data['tipo'], descricao=data['descricao'])
+    nova_sala = Salas(numeroDaSala=int(data['numeroDaSala']), tipo=data['tipo'], descricao=data['descricao'])
     db.session.add(nova_sala)
     db.session.commit()
     return jsonify({'mensagem': 'Sala criada com sucesso'}), 201
@@ -242,6 +241,17 @@ def get_turmas():
     # Retorna os resultados como JSON
     return jsonify({'mensagem': 'Lista de turmas com nome do usuário', 'turmas': turmas_list})
 
+
+@app.route('/turmas', methods=['POST'])
+def create_turma():
+    data = request.json
+    nova_turma = Turmas(nomeDaTurma=data['nomeDaTurma'], inicioAulas=data['inicioAulas'], finalAulas=data['finalAulas'],
+                        diasDaSemana=str(data['diasDaSemana']), curso_id=int(data['curso_id']), user_id=int(data['user_id']),
+                        sala_id=int(data['sala_id']))
+    db.session.add(nova_turma)
+    db.session.commit()
+    return jsonify({'mensagem': 'Turma criada com sucesso'}), 201
+
 @app.route('/turmascalendario', methods=['GET'])
 def get_turmascalendario():
     query = db.session.query(Turmas)
@@ -276,12 +286,7 @@ def get_turmascalendario():
     print(turmas_list)
 
     return jsonify({'mensagem': 'Lista de turmas com nome do usuário', 'turmas': turmas_list})
-@app.route('/turmas', methods=['POST'])
-def create_turma():
-    data = request.json
-    nova_turma = Turmas(nomeDaTurma=data['nomeDaTurma'], inicioAulas=data['inicioAulas'], finalAulas=data['finalAulas'],
-                        diasDaSemana=str(data['diasDaSemana']), curso_id=int(data['curso_id']), user_id=int(data['user_id']),
-                        sala_id=int(data['sala_id']))
+
     db.session.add(nova_turma)
     db.session.commit()
     return jsonify({'mensagem': 'Turma criada com sucesso'}), 201
