@@ -197,7 +197,8 @@ def get_salas():
 @app.route('/salas', methods=['POST'])
 def create_sala():
     data = request.json
-    nova_sala = Salas(numeroDaSala=int(data['numeroDaSala']), tipo=data['tipo'], descricao=data['descricao'])
+    print(data)
+    nova_sala = Salas(numeroDaSala=int(data['numero']), tipo=data['tipo'], descricao=data['descricao'])
     db.session.add(nova_sala)
     db.session.commit()
     return jsonify({'mensagem': 'Sala criada com sucesso'}), 201
