@@ -243,7 +243,7 @@ def get_turmas():
     return jsonify({'mensagem': 'Lista de turmas com nome do usuário', 'turmas': turmas_list})
 
 
-@app.route('/turmas', methods=['POST'])
+@app.route('/turmaspost', methods=['POST'])
 def create_turma():
     data = request.json
     nova_turma = Turmas(nomeDaTurma=data['nomeDaTurma'], inicioAulas=data['inicioAulas'], finalAulas=data['finalAulas'],
